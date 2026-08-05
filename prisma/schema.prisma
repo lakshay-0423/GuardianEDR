@@ -7,3 +7,88 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum EndpointStatus {
+  ONLINE
+  OFFLINE
+  ISOLATED
+}
+
+enum AlertSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum AlertStatus {
+  OPEN
+  ACKNOWLEDGED
+  RESOLVED
+  DISMISSED
+}
+
+model User {
+  id           String     @id @default(uuid()) @db.Uuid
+  email        String     @unique @db.VarChar(320)
+  passwordHash String     @db.VarChar(255)
+  createdAt    DateTime   @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime   @updatedAt @db.Timestamptz(3)
+  endpoints    Endpoint[]
+
+  @@index([createdAt])
+}
+
+model Endpoint {
+  id         String         @id @default(uuid()) @db.Uuid
+  ownerId    String         @db.Uuid
+  agentId    String         @unique @db.VarChar(255)
+  hostname   String         @db.VarChar(255)
+  ipAddress  String?        @db.VarChar(45)
+  osName     String?        @db.VarChar(100)
+  status     EndpointStatus @default(OFFLINE)
+  lastSeenAt DateTime?      @db.Timestamptz(3)
+  createdAt  DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime       @updatedAt @db.Timestamptz(3)
+  owner      User           @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  alerts     Alert[]
+  events     Event[]
+
+  @@unique([ownerId, hostname])
+  @@index([status, lastSeenAt])
+  @@index([ownerId])
+}
+
+model Alert {
+  id            String        @id @default(uuid()) @db.Uuid
+  endpointId    String        @db.Uuid
+  sourceEventId String?       @db.Uuid
+  type          String        @db.VarChar(100)
+  title         String        @db.VarChar(255)
+  description   String?       @db.Text
+  severity      AlertSeverity
+  status        AlertStatus   @default(OPEN)
+  detectedAt    DateTime      @default(now()) @db.Timestamptz(3)
+  resolvedAt    DateTime?     @db.Timestamptz(3)
+  createdAt     DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime      @updatedAt @db.Timestamptz(3)
+  endpoint      Endpoint      @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+  sourceEvent   Event?        @relation(fields: [sourceEventId], references: [id], onDelete: SetNull)
+
+  @@index([endpointId, status, detectedAt])
+  @@index([status, severity, detectedAt])
+  @@index([sourceEventId])
+}
+
+model Event {
+  id         String   @id @default(uuid()) @db.Uuid
+  endpointId String   @db.Uuid
+  eventType  String   @db.VarChar(100)
+  payload    Json
+  occurredAt DateTime @default(now()) @db.Timestamptz(3)
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+  endpoint   Endpoint @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+  alerts     Alert[]
+
+  @@index([endpointId, occurredAt])
+  @@index([eventType, occurredAt])
+}
