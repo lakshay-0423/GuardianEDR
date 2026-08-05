@@ -14,11 +14,16 @@ const errorHandler = (error, req, res, next) => {
 
   const statusCode = error.statusCode || 500;
 
-  return res.status(statusCode).json({
+  const response = {
     success: false,
     message: statusCode >= 500 ? 'Internal server error' : error.message,
-  });
+  };
+
+  if (statusCode < 500 && error.details) {
+    response.errors = error.details;
+  }
+
+  return res.status(statusCode).json(response);
 };
 
 module.exports = errorHandler;
-

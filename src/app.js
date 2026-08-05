@@ -5,6 +5,7 @@ const helmet = require('helmet');
 const requestLogger = require('./middleware/requestLogger');
 const notFound = require('./middleware/notFound');
 const errorHandler = require('./middleware/errorHandler');
+const authRoutes = require('./routes/auth.routes');
 const env = require('./config/env');
 
 const app = express();
@@ -22,6 +23,8 @@ app.get('/health', (req, res) => {
     message: 'Guardian EDR backend is healthy',
   });
 });
+
+app.use('/api/auth', authRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

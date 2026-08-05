@@ -28,12 +28,13 @@ enum AlertStatus {
 }
 
 model User {
-  id           String     @id @default(uuid()) @db.Uuid
-  email        String     @unique @db.VarChar(320)
-  passwordHash String     @db.VarChar(255)
-  createdAt    DateTime   @default(now()) @db.Timestamptz(3)
-  updatedAt    DateTime   @updatedAt @db.Timestamptz(3)
-  endpoints    Endpoint[]
+  id            String         @id @default(uuid()) @db.Uuid
+  email         String         @unique @db.VarChar(320)
+  passwordHash  String         @db.VarChar(255)
+  createdAt     DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime       @updatedAt @db.Timestamptz(3)
+  endpoints     Endpoint[]
+  refreshTokens RefreshToken[]
 
   @@index([createdAt])
 }
@@ -91,4 +92,17 @@ model Event {
 
   @@index([endpointId, occurredAt])
   @@index([eventType, occurredAt])
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  tokenHash String    @unique @db.VarChar(64)
+  expiresAt DateTime  @db.Timestamptz(3)
+  revokedAt DateTime? @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
 }
