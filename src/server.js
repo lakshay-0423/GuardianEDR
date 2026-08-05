@@ -1,20 +1,18 @@
 require('dotenv').config();
 
-const http = require('http');
 const app = require('./app');
 const env = require('./config/env');
 const logger = require('./config/logger');
 const initializeWebSocketServer = require('./websocket');
 
-const server = http.createServer(app);
-initializeWebSocketServer(server);
-
-server.listen(env.PORT, () => {
+const server = app.listen(env.PORT, () => {
   logger.info('Guardian EDR backend started', {
     environment: env.NODE_ENV,
     port: env.PORT,
   });
 });
+
+initializeWebSocketServer(server);
 
 const shutdown = (signal) => {
   logger.info('Shutdown signal received', { signal });
