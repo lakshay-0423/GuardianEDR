@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import {
   apiRequest,
@@ -6,8 +6,7 @@ import {
   getStoredTokens,
   storeTokens,
 } from '../api/client';
-
-const AuthContext = createContext(null);
+import AuthContext from './context';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -73,14 +72,3 @@ export const AuthProvider = ({ children }) => {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-
-  return context;
-};
-

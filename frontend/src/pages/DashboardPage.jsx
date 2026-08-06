@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { apiRequest } from '../api/client';
-import { useAuth } from '../auth/AuthContext';
+import useAuth from '../auth/useAuth';
 import LoadingState from '../components/LoadingState';
 import Sidebar from '../components/Sidebar';
 import StatCard from '../components/StatCard';

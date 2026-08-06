@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 import { ApiError } from '../api/client';
-import { useAuth } from '../auth/AuthContext';
+import useAuth from '../auth/useAuth';
 import LoadingState from '../components/LoadingState';
 
 const LoginPage = ({ onAuthenticated }) => {

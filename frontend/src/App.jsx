@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { useAuth } from './auth/AuthContext';
+import useAuth from './auth/useAuth';
 import LoadingState from './components/LoadingState';
 import DashboardPage from './pages/DashboardPage';
 import LoginPage from './pages/LoginPage';
