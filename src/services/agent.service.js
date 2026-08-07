@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const prisma = require('../config/prisma');
 const env = require('../config/env');
 const { signAgentToken } = require('../utils/agentTokens');
+const HttpError = require('../utils/httpError');
 
 const registerEndpoint = async ({
   agentVersion,
@@ -52,4 +53,44 @@ const registerEndpoint = async ({
   };
 };
 
-module.exports = { registerEndpoint };
+const recordHeartbeat = async ({ agentId, deviceUuid, endpointId }, {
+  cpuUsage,
+  memoryUsage,
+  timestamp,
+}) => {
+  const endpoint = await prisma.endpoint.findFirst({
+    where: {
+      id: endpointId,
+      agentId,
+      deviceUuid,
+    },
+    select: { id: true },
+  });
+
+  if (!endpoint) {
+    throw new HttpError(401, 'Agent is not registered');
+  }
+
+  return prisma.endpoint.update({
+    where: { id: endpoint.id },
+    data: {
+      cpuUsage,
+      lastSeenAt: timestamp,
+      memoryUsage,
+      status: 'ONLINE',
+    },
+    select: {
+      agentId: true,
+      cpuUsage: true,
+      id: true,
+      lastSeenAt: true,
+      memoryUsage: true,
+      status: true,
+    },
+  });
+};
+
+module.exports = {
+  recordHeartbeat,
+  registerEndpoint,
+};

@@ -51,6 +51,8 @@ model Endpoint {
   username     String         @db.VarChar(255)
   agentVersion String         @db.VarChar(100)
   status       EndpointStatus @default(OFFLINE)
+  cpuUsage     Float?         @db.Real
+  memoryUsage  Float?         @db.Real
   lastSeenAt   DateTime?      @db.Timestamptz(3)
   createdAt    DateTime       @default(now()) @db.Timestamptz(3)
   updatedAt    DateTime       @updatedAt @db.Timestamptz(3)

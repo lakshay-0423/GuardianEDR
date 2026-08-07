@@ -26,4 +26,12 @@ const signAgentToken = ({ agentId, deviceUuid, endpointId }) => jwt.sign(
   },
 );
 
-module.exports = { signAgentToken };
+const verifyAgentToken = (token) => jwt.verify(token, getAgentSecret(), {
+  audience: 'guardian-edr-agent',
+  issuer: 'guardian-edr',
+});
+
+module.exports = {
+  signAgentToken,
+  verifyAgentToken,
+};

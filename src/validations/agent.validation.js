@@ -9,4 +9,16 @@ const agentRegisterSchema = z.object({
   deviceUuid: z.string().uuid(),
 }).strict();
 
-module.exports = { agentRegisterSchema };
+const agentHeartbeatSchema = z.object({
+  cpuUsage: z.number().min(0).max(100),
+  memoryUsage: z.number().min(0).max(100),
+  timestamp: z.coerce.date().refine(
+    (value) => value <= new Date(Date.now() + (5 * 60 * 1000)),
+    'Timestamp cannot be more than five minutes in the future',
+  ),
+}).strict();
+
+module.exports = {
+  agentHeartbeatSchema,
+  agentRegisterSchema,
+};
