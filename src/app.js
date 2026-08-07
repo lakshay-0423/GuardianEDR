@@ -6,6 +6,7 @@ const requestLogger = require('./middleware/requestLogger');
 const notFound = require('./middleware/notFound');
 const errorHandler = require('./middleware/errorHandler');
 const authRoutes = require('./routes/auth.routes');
+const agentRoutes = require('./routes/agent.routes');
 const dashboardRoutes = require('./routes/dashboard.routes');
 const endpointRoutes = require('./routes/endpoint.routes');
 const userRoutes = require('./routes/user.routes');
@@ -28,6 +29,7 @@ app.get('/health', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/agent', agentRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/endpoints', endpointRoutes);
 app.use('/api/users', userRoutes);

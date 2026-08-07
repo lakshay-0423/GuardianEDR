@@ -11,6 +11,9 @@ const environmentSchema = z.object({
   JWT_ACCESS_EXPIRES_IN: z.string().regex(/^\d+[smhd]$/).default('15m'),
   JWT_REFRESH_EXPIRES_IN: z.string().regex(/^\d+[smhd]$/).default('7d'),
   BCRYPT_SALT_ROUNDS: z.coerce.number().int().min(10).max(14).default(12),
+  AGENT_JWT_SECRET: z.string().min(32).optional(),
+  AGENT_JWT_EXPIRES_IN: z.string().regex(/^\d+[smhd]$/).default('30d'),
+  AGENT_HEARTBEAT_INTERVAL_SECONDS: z.coerce.number().int().min(30).max(86400).default(300),
 }).superRefine((environment, context) => {
   if (!environment.JWT_ACCESS_SECRET && !environment.JWT_SECRET) {
     context.addIssue({
