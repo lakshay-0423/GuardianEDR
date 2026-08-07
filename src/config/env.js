@@ -14,6 +14,8 @@ const environmentSchema = z.object({
   AGENT_JWT_SECRET: z.string().min(32).optional(),
   AGENT_JWT_EXPIRES_IN: z.string().regex(/^\d+[smhd]$/).default('30d'),
   AGENT_HEARTBEAT_INTERVAL_SECONDS: z.coerce.number().int().min(30).max(86400).default(300),
+  ENDPOINT_OFFLINE_THRESHOLD_SECONDS: z.coerce.number().int().min(1).max(604800).default(900),
+  ENDPOINT_STATUS_CHECK_INTERVAL_SECONDS: z.coerce.number().int().min(1).max(3600).default(60),
 }).superRefine((environment, context) => {
   if (!environment.JWT_ACCESS_SECRET && !environment.JWT_SECRET) {
     context.addIssue({

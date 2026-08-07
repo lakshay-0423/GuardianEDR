@@ -4,6 +4,7 @@ const prisma = require('../config/prisma');
 const env = require('../config/env');
 const { signAgentToken } = require('../utils/agentTokens');
 const HttpError = require('../utils/httpError');
+const { publishEndpointOnline, publishHeartbeatUpdate } = require('../websocket');
 
 const registerEndpoint = async ({
   agentVersion,
@@ -46,6 +47,10 @@ const registerEndpoint = async ({
     endpointId: endpoint.id,
   });
 
+  if (!existingEndpoint || existingEndpoint.status !== 'ONLINE') {
+    publishEndpointOnline(endpoint);
+  }
+
   return {
     agentId: endpoint.agentId,
     agentToken,
@@ -64,14 +69,17 @@ const recordHeartbeat = async ({ agentId, deviceUuid, endpointId }, {
       agentId,
       deviceUuid,
     },
-    select: { id: true },
+    select: {
+      id: true,
+      status: true,
+    },
   });
 
   if (!endpoint) {
     throw new HttpError(401, 'Agent is not registered');
   }
 
-  return prisma.endpoint.update({
+  const updatedEndpoint = await prisma.endpoint.update({
     where: { id: endpoint.id },
     data: {
       cpuUsage,
@@ -88,6 +96,13 @@ const recordHeartbeat = async ({ agentId, deviceUuid, endpointId }, {
       status: true,
     },
   });
+
+  if (endpoint.status !== 'ONLINE') {
+    publishEndpointOnline(updatedEndpoint);
+  }
+
+  publishHeartbeatUpdate(updatedEndpoint);
+  return updatedEndpoint;
 };
 
 module.exports = {
