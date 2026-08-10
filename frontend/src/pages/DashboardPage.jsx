@@ -6,6 +6,14 @@ import LoadingState from '../components/LoadingState';
 import Sidebar from '../components/Sidebar';
 import StatCard from '../components/StatCard';
 import TopNavigation from '../components/TopNavigation';
+import useDashboardSocket from '../websocket/useDashboardSocket';
+
+const dashboardEvents = new Set([
+  'endpoint.online',
+  'endpoint.offline',
+  'heartbeat.update',
+  'alert.created',
+]);
 
 const formatLastSeen = (dateTime) => {
   if (!dateTime) {
@@ -26,9 +34,12 @@ const DashboardPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSigningOut, setIsSigningOut] = useState(false);
 
-  const loadDashboard = useCallback(async () => {
+  const loadDashboard = useCallback(async ({ showLoading = true } = {}) => {
     setError('');
-    setIsLoading(true);
+
+    if (showLoading) {
+      setIsLoading(true);
+    }
 
     try {
       const [summaryResponse, endpointsResponse] = await Promise.all([
@@ -41,13 +52,23 @@ const DashboardPage = () => {
     } catch (requestError) {
       setError(requestError.message ?? 'Unable to load dashboard data.');
     } finally {
-      setIsLoading(false);
+      if (showLoading) {
+        setIsLoading(false);
+      }
     }
   }, []);
 
   useEffect(() => {
     loadDashboard();
   }, [loadDashboard]);
+
+  const handleDashboardEvent = useCallback((event) => {
+    if (dashboardEvents.has(event.event)) {
+      loadDashboard({ showLoading: false });
+    }
+  }, [loadDashboard]);
+
+  const connectionStatus = useDashboardSocket(handleDashboardEvent);
 
   const handleLogout = async () => {
     setIsSigningOut(true);
@@ -58,11 +79,15 @@ const DashboardPage = () => {
     <div className="dashboard-shell">
       <Sidebar />
       <main className="dashboard-content">
-        <TopNavigation user={user} onLogout={handleLogout} />
+        <TopNavigation
+          connectionStatus={connectionStatus}
+          user={user}
+          onLogout={handleLogout}
+        />
 
-        {isLoading && <LoadingState label="Loading dashboard data" />}
+        {isLoading && !summary && <LoadingState label="Loading dashboard data" />}
 
-        {!isLoading && error && (
+        {!isLoading && error && !summary && (
           <section className="error-panel" role="alert">
             <div>
               <p className="eyebrow">Data unavailable</p>
@@ -75,8 +100,9 @@ const DashboardPage = () => {
           </section>
         )}
 
-        {!isLoading && !error && summary && (
+        {summary && (
           <>
+            {error && <p className="dashboard-update-error" role="alert">{error}</p>}
             <section className="summary-grid" aria-label="Endpoint security summary">
               <StatCard label="Total endpoints" value={summary.totalEndpoints} tone="neutral" />
               <StatCard label="Online endpoints" value={summary.onlineEndpoints} tone="success" />
