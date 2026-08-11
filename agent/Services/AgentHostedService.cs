@@ -5,24 +5,28 @@ namespace Guardian.Agent.Services;
 
 public sealed class AgentHostedService(
     ILogger<AgentHostedService> logger,
-    IMachineIdentityProvider machineIdentityProvider,
+    ISystemInformationCollector systemInformationCollector,
     IOptions<AgentOptions> agentOptions) : IHostedService
 {
     private readonly ILogger<AgentHostedService> _logger = logger;
-    private readonly IMachineIdentityProvider _machineIdentityProvider = machineIdentityProvider;
+    private readonly ISystemInformationCollector _systemInformationCollector = systemInformationCollector;
     private readonly AgentOptions _agentOptions = agentOptions.Value;
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        var machine = _machineIdentityProvider.GetIdentity();
+        var systemInformation = _systemInformationCollector.Collect();
 
         _logger.LogInformation(
-            "{ServiceName} initialized. Hostname: {Hostname}; OperatingSystem: {OperatingSystem}; Architecture: {Architecture}; Username: {Username}; ShutdownTimeoutSeconds: {ShutdownTimeoutSeconds}",
+            "{ServiceName} initialized. Hostname: {Hostname}; WindowsOsName: {WindowsOsName}; WindowsOsVersion: {WindowsOsVersion}; Architecture: {Architecture}; CurrentUsername: {CurrentUsername}; AgentVersion: {AgentVersion}; DeviceIdentifier: {DeviceIdentifier}; LocalIpAddress: {LocalIpAddress}; ShutdownTimeoutSeconds: {ShutdownTimeoutSeconds}",
             _agentOptions.ServiceName,
-            machine.Hostname,
-            machine.OperatingSystem,
-            machine.Architecture,
-            machine.Username,
+            systemInformation.Hostname,
+            systemInformation.WindowsOsName,
+            systemInformation.WindowsOsVersion,
+            systemInformation.Architecture,
+            systemInformation.CurrentUsername,
+            systemInformation.AgentVersion,
+            systemInformation.DeviceIdentifier,
+            systemInformation.LocalIpAddress,
             _agentOptions.ShutdownTimeoutSeconds);
 
         return Task.CompletedTask;

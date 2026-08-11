@@ -21,7 +21,7 @@ builder.Services
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
-builder.Services.AddSingleton<IMachineIdentityProvider, MachineIdentityProvider>();
+builder.Services.AddSingleton<ISystemInformationCollector, SystemInformationCollector>();
 builder.Services.AddHostedService<AgentHostedService>();
 
 using var host = builder.Build();
