@@ -1,12 +1,12 @@
 # Guardian EDR
 
-Guardian EDR is an endpoint detection and response platform with a Node.js API, a React dashboard, and a reserved workspace for the endpoint agent.
+Guardian EDR is an endpoint detection and response platform with a Node.js API, a React dashboard, and a Windows endpoint agent.
 
 ## Project layout
 
 - `backend/` — Express API, Prisma schema, PostgreSQL migrations, and WebSocket server.
 - `frontend/` — Vite and React dashboard.
-- `agent/` — Reserved for the future C# endpoint agent.
+- `agent/` — Windows .NET endpoint agent foundation.
 
 ## Local development
 
@@ -29,3 +29,15 @@ Guardian EDR is an endpoint detection and response platform with a Node.js API, 
    ```
 
 The dashboard development server runs on port 5173 and proxies API and WebSocket requests to the backend on port 3000.
+
+4. Build and run the Windows agent:
+
+   ```bash
+   cd agent
+   dotnet restore
+   dotnet build
+   dotnet run
+   ```
+
+Agent settings are in `agent/appsettings.json`. Environment variables prefixed with
+`GUARDIAN_AGENT_` override settings, for example `GUARDIAN_AGENT_Agent__ServiceName`.
