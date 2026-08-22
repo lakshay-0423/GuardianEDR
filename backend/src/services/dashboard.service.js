@@ -1,7 +1,8 @@
 const prisma = require('../config/prisma');
+const { getDashboardEndpointFilter } = require('./endpointAccess.service');
 
 const getSummary = async (userId) => {
-  const endpointFilter = { ownerId: userId };
+  const endpointFilter = getDashboardEndpointFilter(userId);
 
   const [totalEndpoints, onlineEndpoints, offlineEndpoints, totalAlerts] = await Promise.all([
     prisma.endpoint.count({ where: endpointFilter }),
@@ -12,7 +13,7 @@ const getSummary = async (userId) => {
       where: { ...endpointFilter, status: 'OFFLINE' },
     }),
     prisma.alert.count({
-      where: { endpoint: endpointFilter },
+      where: { endpoint: { is: endpointFilter } },
     }),
   ]);
 
