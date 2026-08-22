@@ -32,16 +32,30 @@ builder.Services
         "Registration:BackendBaseUrl must use HTTP or HTTPS.")
     .ValidateOnStart();
 
+builder.Services
+    .AddOptions<HeartbeatOptions>()
+    .Bind(builder.Configuration.GetSection(HeartbeatOptions.SectionName))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
 builder.Services.AddSingleton<ISystemInformationCollector, SystemInformationCollector>();
 builder.Services.AddSingleton<IAgentCredentialStore, WindowsAgentCredentialStore>();
 builder.Services.AddSingleton<IAgentRegistrationService, AgentRegistrationService>();
+builder.Services.AddSingleton<IHeartbeatMetricsCollector, SystemHeartbeatMetricsCollector>();
 builder.Services.AddHttpClient<IAgentRegistrationClient, AgentRegistrationClient>((serviceProvider, client) =>
 {
     var options = serviceProvider.GetRequiredService<IOptions<AgentRegistrationOptions>>().Value;
     client.BaseAddress = new Uri($"{options.BackendBaseUrl.TrimEnd('/')}/");
     client.Timeout = TimeSpan.FromSeconds(options.TimeoutSeconds);
 });
+builder.Services.AddHttpClient<IAgentHeartbeatClient, AgentHeartbeatClient>((serviceProvider, client) =>
+{
+    var options = serviceProvider.GetRequiredService<IOptions<AgentRegistrationOptions>>().Value;
+    client.BaseAddress = new Uri($"{options.BackendBaseUrl.TrimEnd('/')}/");
+    client.Timeout = TimeSpan.FromSeconds(options.TimeoutSeconds);
+});
 builder.Services.AddHostedService<AgentHostedService>();
+builder.Services.AddHostedService<HeartbeatHostedService>();
 
 using var host = builder.Build();
 await host.RunAsync();
