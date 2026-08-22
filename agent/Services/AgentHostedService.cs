@@ -6,13 +6,15 @@ namespace Guardian.Agent.Services;
 public sealed class AgentHostedService(
     ILogger<AgentHostedService> logger,
     ISystemInformationCollector systemInformationCollector,
+    IAgentRegistrationService registrationService,
     IOptions<AgentOptions> agentOptions) : IHostedService
 {
     private readonly ILogger<AgentHostedService> _logger = logger;
     private readonly ISystemInformationCollector _systemInformationCollector = systemInformationCollector;
+    private readonly IAgentRegistrationService _registrationService = registrationService;
     private readonly AgentOptions _agentOptions = agentOptions.Value;
 
-    public Task StartAsync(CancellationToken cancellationToken)
+    public async Task StartAsync(CancellationToken cancellationToken)
     {
         var systemInformation = _systemInformationCollector.Collect();
 
@@ -29,7 +31,20 @@ public sealed class AgentHostedService(
             systemInformation.LocalIpAddress,
             _agentOptions.ShutdownTimeoutSeconds);
 
-        return Task.CompletedTask;
+        var registration = await _registrationService.RegisterAsync(systemInformation, cancellationToken);
+
+        if (!registration.Succeeded)
+        {
+            _logger.LogWarning(
+                "Endpoint registration was not completed. Reason: {Reason}",
+                registration.FailureReason);
+            return;
+        }
+
+        _logger.LogInformation(
+            "Endpoint registration completed. AgentId: {AgentId}; HeartbeatIntervalSeconds: {HeartbeatIntervalSeconds}",
+            registration.AgentId,
+            registration.HeartbeatIntervalSeconds);
     }
 
     public Task StopAsync(CancellationToken cancellationToken)

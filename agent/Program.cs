@@ -1,3 +1,4 @@
+using Guardian.Agent.Communication;
 using Guardian.Agent.Configuration;
 using Guardian.Agent.Logging;
 using Guardian.Agent.Services;
@@ -21,7 +22,25 @@ builder.Services
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
+builder.Services
+    .AddOptions<AgentRegistrationOptions>()
+    .Bind(builder.Configuration.GetSection(AgentRegistrationOptions.SectionName))
+    .ValidateDataAnnotations()
+    .Validate(
+        options => Uri.TryCreate(options.BackendBaseUrl, UriKind.Absolute, out var uri)
+            && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps),
+        "Registration:BackendBaseUrl must use HTTP or HTTPS.")
+    .ValidateOnStart();
+
 builder.Services.AddSingleton<ISystemInformationCollector, SystemInformationCollector>();
+builder.Services.AddSingleton<IAgentCredentialStore, WindowsAgentCredentialStore>();
+builder.Services.AddSingleton<IAgentRegistrationService, AgentRegistrationService>();
+builder.Services.AddHttpClient<IAgentRegistrationClient, AgentRegistrationClient>((serviceProvider, client) =>
+{
+    var options = serviceProvider.GetRequiredService<IOptions<AgentRegistrationOptions>>().Value;
+    client.BaseAddress = new Uri($"{options.BackendBaseUrl.TrimEnd('/')}/");
+    client.Timeout = TimeSpan.FromSeconds(options.TimeoutSeconds);
+});
 builder.Services.AddHostedService<AgentHostedService>();
 
 using var host = builder.Build();
