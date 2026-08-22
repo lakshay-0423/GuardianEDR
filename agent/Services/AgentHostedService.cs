@@ -1,4 +1,5 @@
 using Guardian.Agent.Configuration;
+using Guardian.Agent.Models;
 using Microsoft.Extensions.Options;
 
 namespace Guardian.Agent.Services;
@@ -6,11 +7,13 @@ namespace Guardian.Agent.Services;
 public sealed class AgentHostedService(
     ILogger<AgentHostedService> logger,
     ISystemInformationCollector systemInformationCollector,
+    IAgentCredentialStore credentialStore,
     IAgentRegistrationService registrationService,
     IOptions<AgentOptions> agentOptions) : IHostedService
 {
     private readonly ILogger<AgentHostedService> _logger = logger;
     private readonly ISystemInformationCollector _systemInformationCollector = systemInformationCollector;
+    private readonly IAgentCredentialStore _credentialStore = credentialStore;
     private readonly IAgentRegistrationService _registrationService = registrationService;
     private readonly AgentOptions _agentOptions = agentOptions.Value;
 
@@ -30,6 +33,30 @@ public sealed class AgentHostedService(
             systemInformation.DeviceIdentifier,
             systemInformation.LocalIpAddress,
             _agentOptions.ShutdownTimeoutSeconds);
+
+        var storedCredentials = await _credentialStore.LoadAsync(cancellationToken);
+
+        if (storedCredentials.Status == AgentCredentialLoadStatus.Available)
+        {
+            _logger.LogInformation(
+                "Recovered protected agent credentials. AgentId: {AgentId}; HeartbeatIntervalSeconds: {HeartbeatIntervalSeconds}",
+                storedCredentials.Credentials!.AgentId,
+                storedCredentials.Credentials.HeartbeatIntervalSeconds);
+            return;
+        }
+
+        if (storedCredentials.Status == AgentCredentialLoadStatus.Unavailable)
+        {
+            _logger.LogWarning(
+                "Stored agent credentials cannot be accessed. Registration will not be attempted to avoid replacing unavailable credentials.");
+            return;
+        }
+
+        if (storedCredentials.Status == AgentCredentialLoadStatus.Corrupted)
+        {
+            _logger.LogWarning(
+                "Stored agent credentials are invalid or cannot be decrypted. A new registration will be requested.");
+        }
 
         var registration = await _registrationService.RegisterAsync(systemInformation, cancellationToken);
 
