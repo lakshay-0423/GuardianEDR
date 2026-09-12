@@ -38,10 +38,17 @@ builder.Services
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
+builder.Services
+    .AddOptions<ProcessMonitoringOptions>()
+    .Bind(builder.Configuration.GetSection(ProcessMonitoringOptions.SectionName))
+    .ValidateOnStart();
+
 builder.Services.AddSingleton<ISystemInformationCollector, SystemInformationCollector>();
 builder.Services.AddSingleton<IAgentCredentialStore, WindowsAgentCredentialStore>();
 builder.Services.AddSingleton<IAgentRegistrationService, AgentRegistrationService>();
 builder.Services.AddSingleton<IHeartbeatMetricsCollector, SystemHeartbeatMetricsCollector>();
+builder.Services.AddSingleton<IProcessMonitor, WmiProcessMonitor>();
+builder.Services.AddSingleton<IProcessTelemetrySink, StructuredProcessTelemetryLogger>();
 builder.Services.AddHttpClient<IAgentRegistrationClient, AgentRegistrationClient>((serviceProvider, client) =>
 {
     var options = serviceProvider.GetRequiredService<IOptions<AgentRegistrationOptions>>().Value;
@@ -56,6 +63,7 @@ builder.Services.AddHttpClient<IAgentHeartbeatClient, AgentHeartbeatClient>((ser
 });
 builder.Services.AddHostedService<AgentHostedService>();
 builder.Services.AddHostedService<HeartbeatHostedService>();
+builder.Services.AddHostedService<ProcessMonitoringHostedService>();
 
 using var host = builder.Build();
 await host.RunAsync();
