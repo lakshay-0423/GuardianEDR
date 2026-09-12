@@ -36,7 +36,36 @@ const getEndpointById = async (userId, endpointId) => {
   return endpoint;
 };
 
+const listEndpointEvents = async (userId, endpointId, limit) => {
+  const endpoint = await prisma.endpoint.findFirst({
+    where: {
+      id: endpointId,
+      ...getDashboardEndpointFilter(userId),
+    },
+    select: { id: true },
+  });
+
+  if (!endpoint) {
+    throw new HttpError(404, 'Endpoint not found');
+  }
+
+  return prisma.event.findMany({
+    where: { endpointId: endpoint.id },
+    select: {
+      createdAt: true,
+      endpointId: true,
+      eventType: true,
+      id: true,
+      occurredAt: true,
+      payload: true,
+    },
+    orderBy: { occurredAt: 'desc' },
+    take: limit,
+  });
+};
+
 module.exports = {
   getEndpointById,
+  listEndpointEvents,
   listEndpoints,
 };

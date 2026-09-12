@@ -105,7 +105,43 @@ const recordHeartbeat = async ({ agentId, deviceUuid, endpointId }, {
   return updatedEndpoint;
 };
 
+const ingestEvent = async ({ agentId, deviceUuid, endpointId }, {
+  eventType,
+  payload,
+  timestamp,
+}) => {
+  const endpoint = await prisma.endpoint.findFirst({
+    where: {
+      id: endpointId,
+      agentId,
+      deviceUuid,
+    },
+    select: { id: true },
+  });
+
+  if (!endpoint) {
+    throw new HttpError(401, 'Agent is not registered');
+  }
+
+  return prisma.event.create({
+    data: {
+      endpointId: endpoint.id,
+      eventType,
+      occurredAt: timestamp,
+      payload,
+    },
+    select: {
+      endpointId: true,
+      eventType: true,
+      id: true,
+      occurredAt: true,
+      payload: true,
+    },
+  });
+};
+
 module.exports = {
+  ingestEvent,
   recordHeartbeat,
   registerEndpoint,
 };

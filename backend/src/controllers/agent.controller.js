@@ -21,7 +21,18 @@ const heartbeat = asyncHandler(async (req, res) => {
   });
 });
 
+const ingestEvent = asyncHandler(async (req, res) => {
+  const event = await agentService.ingestEvent(req.agent, req.body);
+
+  res.status(201).json({
+    success: true,
+    message: 'Agent event received successfully',
+    data: { event },
+  });
+});
+
 module.exports = {
   heartbeat,
+  ingestEvent,
   register,
 };

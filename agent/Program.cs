@@ -43,12 +43,25 @@ builder.Services
     .Bind(builder.Configuration.GetSection(ProcessMonitoringOptions.SectionName))
     .ValidateOnStart();
 
+builder.Services
+    .AddOptions<ProcessEventTransmissionOptions>()
+    .Bind(builder.Configuration.GetSection(ProcessEventTransmissionOptions.SectionName))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
 builder.Services.AddSingleton<ISystemInformationCollector, SystemInformationCollector>();
 builder.Services.AddSingleton<IAgentCredentialStore, WindowsAgentCredentialStore>();
 builder.Services.AddSingleton<IAgentRegistrationService, AgentRegistrationService>();
 builder.Services.AddSingleton<IHeartbeatMetricsCollector, SystemHeartbeatMetricsCollector>();
 builder.Services.AddSingleton<IProcessMonitor, WmiProcessMonitor>();
-builder.Services.AddSingleton<IProcessTelemetrySink, StructuredProcessTelemetryLogger>();
+builder.Services.AddSingleton<StructuredProcessTelemetryLogger>();
+builder.Services.AddSingleton<IProcessEventBuffer, ProcessEventBuffer>();
+builder.Services.AddSingleton<IProcessTelemetrySink>(serviceProvider =>
+{
+    var telemetryLogger = serviceProvider.GetRequiredService<StructuredProcessTelemetryLogger>();
+    var eventBuffer = serviceProvider.GetRequiredService<IProcessEventBuffer>();
+    return new CompositeProcessTelemetrySink(telemetryLogger, eventBuffer);
+});
 builder.Services.AddHttpClient<IAgentRegistrationClient, AgentRegistrationClient>((serviceProvider, client) =>
 {
     var options = serviceProvider.GetRequiredService<IOptions<AgentRegistrationOptions>>().Value;
@@ -61,9 +74,16 @@ builder.Services.AddHttpClient<IAgentHeartbeatClient, AgentHeartbeatClient>((ser
     client.BaseAddress = new Uri($"{options.BackendBaseUrl.TrimEnd('/')}/");
     client.Timeout = TimeSpan.FromSeconds(options.TimeoutSeconds);
 });
+builder.Services.AddHttpClient<IAgentEventClient, AgentEventClient>((serviceProvider, client) =>
+{
+    var options = serviceProvider.GetRequiredService<IOptions<AgentRegistrationOptions>>().Value;
+    client.BaseAddress = new Uri($"{options.BackendBaseUrl.TrimEnd('/')}/");
+    client.Timeout = TimeSpan.FromSeconds(options.TimeoutSeconds);
+});
 builder.Services.AddHostedService<AgentHostedService>();
 builder.Services.AddHostedService<HeartbeatHostedService>();
 builder.Services.AddHostedService<ProcessMonitoringHostedService>();
+builder.Services.AddHostedService<ProcessEventTransmissionHostedService>();
 
 using var host = builder.Build();
 await host.RunAsync();

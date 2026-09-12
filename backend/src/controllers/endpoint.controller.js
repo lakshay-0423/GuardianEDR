@@ -21,7 +21,22 @@ const getEndpointById = asyncHandler(async (req, res) => {
   });
 });
 
+const listEndpointEvents = asyncHandler(async (req, res) => {
+  const events = await endpointService.listEndpointEvents(
+    req.auth.userId,
+    req.params.id,
+    req.validatedQuery.limit,
+  );
+
+  res.status(200).json({
+    success: true,
+    message: 'Endpoint events retrieved successfully',
+    data: { events },
+  });
+});
+
 module.exports = {
   getEndpointById,
+  listEndpointEvents,
   listEndpoints,
 };

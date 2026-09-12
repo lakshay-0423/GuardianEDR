@@ -18,7 +18,30 @@ const agentHeartbeatSchema = z.object({
   ),
 }).strict();
 
+const nullableProcessString = (maximumLength) => z.string()
+  .trim()
+  .max(maximumLength)
+  .nullable();
+
+const agentProcessEventSchema = z.object({
+  eventType: z.enum(['PROCESS_STARTED', 'PROCESS_TERMINATED']),
+  timestamp: z.coerce.date().refine(
+    (value) => value <= new Date(Date.now() + (5 * 60 * 1000)),
+    'Timestamp cannot be more than five minutes in the future',
+  ),
+  payload: z.object({
+    processId: z.number().int().positive(),
+    processName: nullableProcessString(255),
+    executablePath: nullableProcessString(32767),
+    parentProcessId: z.number().int().positive().nullable(),
+    parentProcessName: nullableProcessString(255),
+    commandLine: nullableProcessString(32767),
+    username: nullableProcessString(255),
+  }).strict(),
+}).strict();
+
 module.exports = {
+  agentProcessEventSchema,
   agentHeartbeatSchema,
   agentRegisterSchema,
 };
