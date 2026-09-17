@@ -49,11 +49,20 @@ builder.Services
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
+builder.Services
+    .AddOptions<FileMonitoringOptions>()
+    .Bind(builder.Configuration.GetSection(FileMonitoringOptions.SectionName))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
 builder.Services.AddSingleton<ISystemInformationCollector, SystemInformationCollector>();
 builder.Services.AddSingleton<IAgentCredentialStore, WindowsAgentCredentialStore>();
 builder.Services.AddSingleton<IAgentRegistrationService, AgentRegistrationService>();
 builder.Services.AddSingleton<IHeartbeatMetricsCollector, SystemHeartbeatMetricsCollector>();
 builder.Services.AddSingleton<IProcessMonitor, WmiProcessMonitor>();
+builder.Services.AddSingleton<IFileMonitoringPathResolver, WindowsFileMonitoringPathResolver>();
+builder.Services.AddSingleton<IFileMonitor, FileSystemWatcherMonitor>();
+builder.Services.AddSingleton<IFileTelemetrySink, StructuredFileTelemetryLogger>();
 builder.Services.AddSingleton<StructuredProcessTelemetryLogger>();
 builder.Services.AddSingleton<IProcessEventBuffer, ProcessEventBuffer>();
 builder.Services.AddSingleton<IProcessTelemetrySink>(serviceProvider =>
@@ -84,6 +93,7 @@ builder.Services.AddHostedService<AgentHostedService>();
 builder.Services.AddHostedService<HeartbeatHostedService>();
 builder.Services.AddHostedService<ProcessMonitoringHostedService>();
 builder.Services.AddHostedService<ProcessEventTransmissionHostedService>();
+builder.Services.AddHostedService<FileMonitoringHostedService>();
 
 using var host = builder.Build();
 await host.RunAsync();
