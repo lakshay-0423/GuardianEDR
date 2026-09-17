@@ -7,11 +7,11 @@ const connectionLabels = {
   reconnecting: 'Reconnecting realtime',
 };
 
-const TopNavigation = ({ user, onLogout, connectionStatus }) => (
+const TopNavigation = ({ user, onLogout, connectionStatus, title = 'Dashboard overview' }) => (
   <header className="top-navigation">
     <div>
       <p className="eyebrow">Security operations</p>
-      <h1>Dashboard overview</h1>
+      <h1>{title}</h1>
     </div>
     <div className="account-menu">
       <span className={`connection-status connection-status--${connectionStatus}`}>

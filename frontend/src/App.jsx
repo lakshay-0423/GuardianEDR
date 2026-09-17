@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import useAuth from './auth/useAuth';
 import LoadingState from './components/LoadingState';
 import DashboardPage from './pages/DashboardPage';
+import EventLogsPage from './pages/EventLogsPage';
 import LoginPage from './pages/LoginPage';
 
 const App = () => {
@@ -30,7 +31,7 @@ const App = () => {
       navigate('/login', true);
     }
 
-    if (isAuthenticated && path !== '/') {
+    if (isAuthenticated && path !== '/' && path !== '/events') {
       navigate('/', true);
     }
   }, [isAuthenticated, isReady, navigate, path]);
@@ -43,7 +44,7 @@ const App = () => {
     return <LoginPage onAuthenticated={() => navigate('/', true)} />;
   }
 
-  return <DashboardPage />;
+  return path === '/events' ? <EventLogsPage /> : <DashboardPage />;
 };
 
 export default App;

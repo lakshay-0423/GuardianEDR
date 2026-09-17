@@ -3,9 +3,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { apiRequest } from '../api/client';
 import useAuth from '../auth/useAuth';
 import LoadingState from '../components/LoadingState';
-import Sidebar from '../components/Sidebar';
+import DashboardLayout from '../components/DashboardLayout';
 import StatCard from '../components/StatCard';
-import TopNavigation from '../components/TopNavigation';
 import useDashboardSocket from '../websocket/useDashboardSocket';
 
 const dashboardEvents = new Set([
@@ -76,14 +75,13 @@ const DashboardPage = () => {
   };
 
   return (
-    <div className="dashboard-shell">
-      <Sidebar />
-      <main className="dashboard-content">
-        <TopNavigation
-          connectionStatus={connectionStatus}
-          user={user}
-          onLogout={handleLogout}
-        />
+    <>
+      <DashboardLayout
+        connectionStatus={connectionStatus}
+        title="Dashboard overview"
+        user={user}
+        onLogout={handleLogout}
+      >
 
         {isLoading && !summary && <LoadingState label="Loading dashboard data" />}
 
@@ -158,9 +156,9 @@ const DashboardPage = () => {
             </section>
           </>
         )}
-      </main>
+      </DashboardLayout>
       {isSigningOut && <LoadingState label="Signing out" fullScreen />}
-    </div>
+    </>
   );
 };
 

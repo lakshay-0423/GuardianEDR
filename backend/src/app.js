@@ -9,6 +9,7 @@ const authRoutes = require('./routes/auth.routes');
 const agentRoutes = require('./routes/agent.routes');
 const dashboardRoutes = require('./routes/dashboard.routes');
 const endpointRoutes = require('./routes/endpoint.routes');
+const eventRoutes = require('./routes/event.routes');
 const userRoutes = require('./routes/user.routes');
 const env = require('./config/env');
 
@@ -32,6 +33,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/agent', agentRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/endpoints', endpointRoutes);
+app.use('/api/events', eventRoutes);
 app.use('/api/users', userRoutes);
 
 app.use(notFound);

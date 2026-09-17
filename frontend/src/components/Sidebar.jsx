@@ -1,4 +1,7 @@
-const Sidebar = () => (
+const Sidebar = () => {
+  const currentPath = window.location.pathname;
+
+  return (
   <aside className="sidebar">
     <div className="brand">
       <span className="brand__mark" aria-hidden="true">G</span>
@@ -6,9 +9,13 @@ const Sidebar = () => (
     </div>
 
     <nav className="sidebar__nav" aria-label="Primary navigation">
-      <a href="/" className="sidebar__link active">
+      <a href="/" className={`sidebar__link ${currentPath === '/' ? 'active' : ''}`}>
         <span aria-hidden="true">◈</span>
         Overview
+      </a>
+      <a href="/events" className={`sidebar__link ${currentPath === '/events' ? 'active' : ''}`}>
+        <span aria-hidden="true">Logs</span>
+        Event logs
       </a>
     </nav>
 
@@ -17,6 +24,7 @@ const Sidebar = () => (
       Platform protected
     </div>
   </aside>
-);
+  );
+};
 
 export default Sidebar;

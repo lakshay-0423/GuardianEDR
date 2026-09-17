@@ -18,7 +18,8 @@ body {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -382,6 +383,7 @@ button {
 .stat-card--neutral { border-bottom: 3px solid #5ca7f7; }
 
 .endpoint-panel,
+.event-log-panel,
 .error-panel {
   background: #17233a;
   border: 1px solid #2a3c59;
@@ -393,6 +395,47 @@ button {
   color: #ffacb5;
   font-size: 0.88rem;
   margin: 1.5rem 0 -0.5rem;
+}
+
+.event-log-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.event-log-filters label {
+  color: #bdc7d7;
+  display: grid;
+  font-size: 0.8rem;
+  font-weight: 700;
+  gap: 0.45rem;
+}
+
+.event-log-filters select {
+  background: #101c30;
+  border: 1px solid #30415d;
+  border-radius: 7px;
+  color: #e5ebf5;
+  min-width: 12rem;
+  padding: 0.6rem 0.7rem;
+}
+
+.event-log-error {
+  align-items: center;
+  background: rgb(239 91 108 / 9%);
+  border: 1px solid rgb(239 91 108 / 32%);
+  border-radius: 8px;
+  color: #ffacb5;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-top: 1.25rem;
+  padding: 0.85rem 1rem;
+}
+
+.event-log-error p {
+  margin: 0;
 }
 
 .section-heading {
@@ -433,6 +476,44 @@ button {
 .table-wrapper {
   margin-top: 1.2rem;
   overflow-x: auto;
+}
+
+.event-log-table-wrapper {
+  margin-top: 1.5rem;
+}
+
+.event-log-table {
+  min-width: 76rem;
+}
+
+.event-log-table__path {
+  color: #aab7ca;
+  max-width: 18rem;
+  overflow-wrap: anywhere;
+}
+
+.event-type {
+  background: rgb(92 167 247 / 14%);
+  border-radius: 999px;
+  color: #9dcaff;
+  font-size: 0.73rem;
+  font-weight: 800;
+  padding: 0.28rem 0.5rem;
+  width: fit-content;
+}
+
+.pagination {
+  align-items: center;
+  color: #9eacc0;
+  display: flex;
+  font-size: 0.85rem;
+  justify-content: space-between;
+  margin-top: 1.25rem;
+}
+
+.pagination > div {
+  display: flex;
+  gap: 0.4rem;
 }
 
 table {
@@ -528,4 +609,5 @@ td span {
   .account-menu__email { display: none; }
   .summary-grid { grid-template-columns: 1fr; }
   .error-panel { align-items: flex-start; flex-direction: column; gap: 1rem; }
+  .event-log-error { align-items: flex-start; flex-direction: column; }
 }
